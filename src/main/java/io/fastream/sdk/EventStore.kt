@@ -26,7 +26,7 @@ internal class EventStore(
 
     fun add(eventPayload: JsonObject) {
         executor.execute {
-            db.eventDao().insertAll(listOf(EventEntity(null, eventPayload.asString)))
+            db.eventDao().insertAll(listOf(EventEntity(null, eventPayload.toString())))
         }
     }
 

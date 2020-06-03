@@ -3,7 +3,7 @@ package io.fastream.sdk
 import android.content.Context
 import com.google.gson.JsonObject
 
-internal class EventFactory(context: Context) {
+internal class EventFactory(context: Context? = null) {
 
     fun create(eventName: String, properties: JsonObject): JsonObject {
         val enhancedEvent = properties.deepCopy()
@@ -15,4 +15,14 @@ internal class EventFactory(context: Context) {
 
 }
 
-private fun JsonObject.getOrCreateJsonObject(memberName: String): JsonObject = runCatching { this.getAsJsonObject(memberName) }.recover { JsonObject() }.getOrElse { JsonObject() }
+private fun JsonObject.getOrCreateJsonObject(memberName: String): JsonObject {
+    if (this.has(memberName)) {
+        val element = this.get(memberName)
+        if (element.isJsonObject) {
+            return element.asJsonObject
+        }
+    }
+    val jsonObject = JsonObject()
+    this.add(memberName, jsonObject)
+    return jsonObject
+}

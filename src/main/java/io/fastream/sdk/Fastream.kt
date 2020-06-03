@@ -1,5 +1,6 @@
 package io.fastream.sdk
 
+import android.app.Application
 import android.content.Context
 import com.google.gson.JsonObject
 import okhttp3.MediaType
@@ -15,7 +16,7 @@ class Fastream(
     private val context: Context
 ) {
 
-    private val service = Retrofit.Builder().baseUrl(url).build().create(ApiService::class.java)
+    private val service = Retrofit.Builder().baseUrl(url.let { if (it.startsWith("http://") || it.startsWith("https://")) it else "https://$url" }).build().create(ApiService::class.java)
     private val mediaType = MediaType.parse("application/json")
     private val eventStore = EventStore(context)
     private val eventFactory = EventFactory(context)
