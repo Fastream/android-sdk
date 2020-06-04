@@ -3,14 +3,21 @@ package io.fastream.sdk
 import android.content.Context
 import com.google.gson.JsonObject
 
-internal class EventFactory(context: Context? = null) {
+internal class EventFactory(context: Context) {
+
+    private val defaultPropertiesFactory = DefaultPropertiesFactory(context)
 
     fun create(eventName: String, properties: JsonObject): JsonObject {
-        val enhancedEvent = properties.deepCopy()
-        enhancedEvent.addProperty("event", eventName)
-        val metadata = enhancedEvent.getOrCreateJsonObject("_metadata")
-        enhancedEvent.add("_metadata", metadata)
-        return enhancedEvent
+        val eventObject = JsonObject()
+        val eventProperties = JsonObject()
+
+        val defaultEventProperties = defaultPropertiesFactory.createDefaultEventProperties()
+        defaultEventProperties.entrySet().forEach { (k, v) -> eventProperties.add(k, v) }
+        properties.entrySet().forEach { (k, v) -> eventProperties.add(k, v) }
+
+        eventObject.addProperty("event", eventName)
+        eventObject.add("properties", eventProperties)
+        return eventObject
     }
 
 }
