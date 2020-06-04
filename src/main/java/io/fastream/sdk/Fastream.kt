@@ -2,6 +2,7 @@ package io.fastream.sdk
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import com.google.gson.JsonObject
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -9,6 +10,8 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
+
+private const val LOGTAG = "Fastream"
 
 class Fastream(
     url: String,
@@ -21,6 +24,8 @@ class Fastream(
     private val eventStore = EventStore(context)
     private val eventFactory = EventFactory(context)
 
+    init { runCatching { flush() } }
+
     fun flush() {
         eventStore.findAll { events ->
             if (events.isEmpty()) { return@findAll }
@@ -28,7 +33,7 @@ class Fastream(
             val call = service.sendEvents(token = token, events = requestBody)
             call.enqueue(SendEventsCallback(
                 onSuccess = { eventStore.deleteAll(events) },
-                onError = {  }
+                onError = { Log.w(LOGTAG, "Cannot flush events", it) }
             ))
         }
     }
@@ -57,7 +62,7 @@ private class SendEventsCallback(
     }
 
     override fun onFailure(call: Call<Unit>, t: Throwable) {
-        onError(FastreamException("Cannot send events to fastream",t))
+        onError(FastreamException("Cannot send events to fastream", t))
     }
 
 }

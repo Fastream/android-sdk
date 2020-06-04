@@ -13,7 +13,7 @@ class DefaultPropertiesFactory (
 
     fun createDefaultEventProperties(): JsonObject {
         val defaultProperties = JsonObject()
-        defaultProperties.addProperty("alooma_sdk", "android")
+        defaultProperties.addProperty("fastream_sdk", "android")
         defaultProperties.addProperty("\$lib_version", BuildConfig.VERSION_NAME)
 
         // For querying together with data from other libraries
