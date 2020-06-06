@@ -3,6 +3,7 @@ package io.fastream.sdk
 import android.app.Application
 import android.content.Context
 import android.util.Log
+import android.util.LogPrinter
 import com.google.gson.JsonObject
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -16,25 +17,23 @@ private const val LOGTAG = "Fastream"
 class Fastream(
     url: String,
     private val token: String,
-    private val context: Context
+    private val context: Context,
+    private val flushOnStart: Boolean
 ) {
 
-    private val service = Retrofit.Builder().baseUrl(url.let { if (it.startsWith("http://") || it.startsWith("https://")) it else "https://$url" }).build().create(ApiService::class.java)
-    private val mediaType = MediaType.parse("application/json")
-    private val eventStore = EventStore(context)
     private val eventFactory = EventFactory(context)
+    private val eventStore = EventStore(context)
+    private val eventSender = EventSender(url = url, token = token)
 
-    init { runCatching { flush() } }
+    init { if (flushOnStart) { flush() } }
 
     fun flush() {
         eventStore.findAll { events ->
-            if (events.isEmpty()) { return@findAll }
-            val requestBody = RequestBody.create(mediaType, "[${events.joinToString(",") { it.payload }}]")
-            val call = service.sendEvents(token = token, events = requestBody)
-            call.enqueue(SendEventsCallback(
+            eventSender.send(
+                events = events.map { it.payload },
                 onSuccess = { eventStore.deleteAll(events) },
                 onError = { Log.w(LOGTAG, "Cannot flush events", it) }
-            ))
+            )
         }
     }
 
@@ -43,28 +42,8 @@ class Fastream(
     }
 
     companion object {
-        fun init(url: String, token: String, context: Context) = Fastream(url, token, context)
+        fun init(url: String, token: String, context: Context, flushOnStart: Boolean = true) = Fastream(url, token, context, flushOnStart)
     }
 
 }
 
-private class SendEventsCallback(
-    private val onSuccess: () -> Unit,
-    private val onError: (Throwable) -> Unit
-) : Callback<Unit> {
-
-    override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-        if (response.isSuccessful) {
-            onSuccess()
-        } else {
-            onError(FastreamException("Cannot send events to fastream (code=${response.code()})"))
-        }
-    }
-
-    override fun onFailure(call: Call<Unit>, t: Throwable) {
-        onError(FastreamException("Cannot send events to fastream", t))
-    }
-
-}
-
-class FastreamException(message: String, throwable: Throwable? = null) : RuntimeException(message, throwable)
