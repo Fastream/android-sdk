@@ -1,5 +1,7 @@
 package io.fastream.sdk
 
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -18,12 +20,31 @@ class EventSender (
 
     fun send(events: List<String>, onSuccess: () -> Unit, onError: (Throwable) -> Unit) {
         if (events.isEmpty()) return
+        addSendingTime(events)
         val requestBody = RequestBody.create(mediaType, "[${events.joinToString(",")}]")
         val call = service.sendEvents(token = token, events = requestBody)
         call.enqueue(SendEventsCallback(
             onSuccess = { onSuccess() },
             onError = { onError(it) }
         ))
+    }
+
+    private fun addSendingTime(events: List<String>) {
+        events.forEach { event ->
+            Gson().fromJson(event, JsonObject::class.java).getAsJsonObject("properties").addProperty(
+                "sending_time",
+                System.currentTimeMillis() / 1000
+            )
+        }
+    }
+
+    private fun addMessageIndex(events: List<String>) {
+        events.forEachIndexed { index, event ->
+            Gson().fromJson(event, JsonObject::class.java).getAsJsonObject("properties").addProperty(
+                "message_index",
+                index + 1
+            )
+        }
     }
 
 }

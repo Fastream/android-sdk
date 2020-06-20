@@ -1,23 +1,34 @@
 package io.fastream.sdk
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.os.Build
+import android.provider.Settings
 import android.telephony.TelephonyManager
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+import java.util.*
 
 private const val LOGTAG = "Fastream.sysinfo"
 
 internal class SystemInformation(
     private val context: Context
 ) {
+
+    private val fallbackDeviceId: String by lazy { UUID.randomUUID().toString() }
+
+    @SuppressLint("HardwareIds")
+    fun getDeviceId(): String? {
+        val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+        return runCatching { Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID) }.recoverCatching { fallbackDeviceId }.getOrNull()
+    }
 
     fun getPhoneRadioType(): String? {
         val telephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager

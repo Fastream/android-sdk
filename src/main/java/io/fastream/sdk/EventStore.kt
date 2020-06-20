@@ -1,28 +1,17 @@
 package io.fastream.sdk
 
-import android.content.Context
-import android.os.AsyncTask
-import androidx.room.Room
 import com.google.gson.JsonObject
-import io.fastream.sdk.db.EventDb
+import io.fastream.sdk.db.FastreamDb
 import io.fastream.sdk.db.EventEntity
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
+private const val DEFAULT_BATCH_SIZE = 50
 
 internal class EventStore(
-    private val context: Context
+    private val db: FastreamDb,
+    private val executor: Executor
 ) {
-
-    private val executor: Executor by lazy {
-        Executors.newSingleThreadExecutor()
-    }
-
-    private val db: EventDb by lazy {
-        Room.databaseBuilder(context, EventDb::class.java, "fastream-event-database")
-            .fallbackToDestructiveMigration()
-            .build()
-    }
 
     fun add(eventPayload: JsonObject) {
         executor.execute {
@@ -30,9 +19,9 @@ internal class EventStore(
         }
     }
 
-    fun findAll(callback: (List<EventEntity>) -> Unit) {
+    fun findAll(batchSize: Int = DEFAULT_BATCH_SIZE, callback: (List<EventEntity>) -> Unit) {
         executor.execute {
-            callback(db.eventDao().findAllEvents())
+            callback(db.eventDao().findAll(batchSize))
         }
     }
 

@@ -1,16 +1,12 @@
 package io.fastream.sdk
 
-import android.app.Application
 import android.content.Context
 import android.util.Log
-import android.util.LogPrinter
+import androidx.room.Room
 import com.google.gson.JsonObject
-import okhttp3.MediaType
-import okhttp3.RequestBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
+import io.fastream.sdk.db.FastreamDb
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 private const val LOGTAG = "Fastream"
 
@@ -21,9 +17,17 @@ class Fastream(
     private val flushOnStart: Boolean
 ) {
 
+    private val executor: Executor = Executors.newSingleThreadExecutor()
+
+    private val db: FastreamDb = Room.databaseBuilder(context, FastreamDb::class.java, "fastream-event-database")
+        .fallbackToDestructiveMigration()
+        .build()
+
     private val eventFactory = EventFactory(context)
-    private val eventStore = EventStore(context)
+    private val eventStore = EventStore(db, executor)
     private val eventSender = EventSender(url = url, token = token)
+
+    private val superPropertiesStore = SuperPropertyStore(db, executor)
 
     init { if (flushOnStart) { flush() } }
 
@@ -38,7 +42,21 @@ class Fastream(
     }
 
     fun track(eventName: String, properties: JsonObject) {
-        eventStore.add(eventFactory.create(eventName, properties))
+        superPropertiesStore.findAll { superProperties ->
+            eventStore.add(eventFactory.create(eventName, properties, superProperties))
+        }
+    }
+
+    fun setSuperProperty(key: String, value: String) {
+        superPropertiesStore.add(key, value)
+    }
+
+    fun removeSuperProperty(key: String) {
+        superPropertiesStore.remove(key)
+    }
+
+    fun clearSuperProperties() {
+        superPropertiesStore.clear()
     }
 
     companion object {

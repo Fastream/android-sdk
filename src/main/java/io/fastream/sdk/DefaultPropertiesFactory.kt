@@ -17,6 +17,7 @@ class DefaultPropertiesFactory (
         defaultProperties.addProperty("\$lib_version", BuildConfig.VERSION_NAME)
 
         // For querying together with data from other libraries
+        defaultProperties.addProperty("distinct_id", mSystemInformation.getDeviceId())
         defaultProperties.addProperty("\$os", "Android")
         defaultProperties.addProperty("\$os_version", if (Build.VERSION.RELEASE == null) "UNKNOWN" else Build.VERSION.RELEASE)
         defaultProperties.addProperty("\$manufacturer", if (Build.MANUFACTURER == null) "UNKNOWN" else Build.MANUFACTURER)

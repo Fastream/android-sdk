@@ -7,8 +7,8 @@ import androidx.room.Query
 
 @Dao
 internal interface EventDao {
-    @Query("SELECT * FROM EventEntity")
-    fun findAllEvents(): List<EventEntity>
+    @Query("SELECT * FROM EventEntity LIMIT :batchSize")
+    fun findAll(batchSize: Int): List<EventEntity>
     @Insert
     fun insertAll(events: List<EventEntity>)
     @Delete
