@@ -1,4 +1,4 @@
-# Fastream - an iOS Event Tracking Library
+# Fastream - an Android Event Tracking Library
 
 [![Release](https://jitpack.io/v/fastream/android-sdk.svg)]
 (https://jitpack.io/#fastream/android-sdk)
@@ -7,7 +7,7 @@
 
 Integrating the Fastream SDK can be done in a few simple steps
 
-### Add Jit{ack repository to your build.gradle
+### Add JitPack repository to your build.gradle
 
 ```
 repositories {
