@@ -1,6 +1,7 @@
 package io.fastream.sdk
 
 import android.content.Context
+import com.google.gson.Gson
 import com.google.gson.JsonObject
 import java.util.*
 
@@ -11,9 +12,11 @@ internal class EventFactory(private val context: Context) {
 
     private val defaultPropertiesFactory = DefaultPropertiesFactory(context)
 
+    private val gson = Gson()
+
     fun create(
         eventName: String,
-        properties: JsonObject,
+        properties: Map<String, Any>,
         superProperties: Map<String, String>
     ): JsonObject {
         val eventObject = JsonObject()
@@ -24,7 +27,7 @@ internal class EventFactory(private val context: Context) {
         defaultEventProperties.entrySet().forEach { (k, v) -> eventProperties.add(k, v) }
         eventProperties.addProperty("time", System.currentTimeMillis() / 1000)
         eventProperties.addProperty("session_id", sessionId)
-        properties.entrySet().forEach { (k, v) -> eventProperties.add(k, v) }
+        properties.entries.forEach { (k, v) -> eventProperties.add(k, gson.toJsonTree(v)) }
         eventObject.addProperty("event", eventName)
         eventObject.add("properties", eventProperties)
         return eventObject

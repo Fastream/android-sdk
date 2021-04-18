@@ -51,7 +51,7 @@ internal class SystemInformation(
         if (PackageManager.PERMISSION_GRANTED == context.checkCallingOrSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE)) {
             val connManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             val wifiInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-            ret = wifiInfo.isConnected
+            ret = wifiInfo?.isConnected
         }
         return ret
     }
