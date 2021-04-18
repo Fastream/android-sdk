@@ -1,7 +1,6 @@
 # Fastream - an Android Event Tracking Library
 
-[![Release](https://jitpack.io/v/fastream/android-sdk.svg)]
-(https://jitpack.io/#fastream/android-sdk)
+[![Release](https://jitpack.io/v/fastream/android-sdk.svg)](https://jitpack.io/#fastream/android-sdk)
 
 ## Installation
 
