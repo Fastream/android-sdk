@@ -18,7 +18,7 @@ repositories {
 
 ```
 dependencies {
-    implementation 'com.github.fastream:android-sdk:0.0.8'
+    implementation 'com.github.fastream:android-sdk:0.0.9'
 }
 ```
 
@@ -97,7 +97,7 @@ fastream.flush()
     "$screen_dpi": 280,
     "distinct_id": "9b7509389051224d",
     "$app_version": "1.0",
-    "$lib_version": "0.0.8",
+    "$lib_version": "0.0.9",
     "fastream_sdk": "android",
     "$manufacturer": "samsung",
     "$screen_width": 720,
