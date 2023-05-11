@@ -13,11 +13,11 @@ internal class SuperPropertyStore(
     private val cached = ConcurrentHashMap<String, String>()
 
     fun findAll(callback: (Map<String, String>) -> Unit) {
-        if (cached.isNotEmpty()) {
-            callback(cached)
-            return
-        }
         executor.execute {
+            if (cached.isNotEmpty()) {
+                callback(cached)
+                return@execute
+            }
             val superProperties = db.superPropertiesDao().findAll()
             cached.clear()
             superProperties.forEach { cached[it.key] = it.value }
