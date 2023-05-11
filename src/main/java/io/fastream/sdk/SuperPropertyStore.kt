@@ -2,25 +2,26 @@ package io.fastream.sdk
 
 import io.fastream.sdk.db.FastreamDb
 import io.fastream.sdk.db.SuperPropertyEntity
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
-internal class SuperPropertyStore (
-    private val db: FastreamDb,
-    private val executor: Executor
+internal class SuperPropertyStore(
+        private val db: FastreamDb,
+        private val executor: Executor
 ) {
 
-    private val cached = mutableMapOf<String, String>()
+    private val cached = ConcurrentHashMap<String, String>()
 
     fun findAll(callback: (Map<String, String>) -> Unit) {
         if (cached.isNotEmpty()) {
-            callback(cached.toMap())
+            callback(cached)
             return
         }
         executor.execute {
             val superProperties = db.superPropertiesDao().findAll()
             cached.clear()
             superProperties.forEach { cached[it.key] = it.value }
-            callback(cached.toMap())
+            callback(cached)
         }
     }
 
@@ -35,7 +36,7 @@ internal class SuperPropertyStore (
     fun remove(key: String) {
         executor.execute {
             db.superPropertiesDao().deleteByKey(key)
-            cached.clear()
+            cached.remove(key)
         }
     }
 
